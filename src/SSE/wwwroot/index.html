@@ -11,14 +11,16 @@
     Testing!
 
     <div hx-ext="sse" sse-connect="/sse-test">
-        <div sse-swap="TestEvent"></div>
-        <div hx-trigger="sse:TestEvent" hx-swap="afterend" hx-get="/events/" hx-vals='js:{ id: event.lastEventId }'></div>
+        <div sse-swap="BackgroundEvent"></div>
+        <div sse-swap="ScheduledEvent"></div>
+
+        <div hx-trigger="sse:BackgroundEvent,sse:ScheduledEvent" hx-swap="afterend" hx-get="/events/" hx-vals='js:{ id: event.lastEventId }'></div>
     </div>
 </body>
 </html>
 <script language="javascript">
-    //document.body.addEventListener('sse:TestEvent', function (evt) {
-    //    console.dir(evt);
-    //    //evt.detail.elt.setAttribute("hx-vals", JSON.stringify({ eventId: evt.detail.lastEventId }));
-    //});
+    document.body.addEventListener('sse:Event', function (evt) {
+        console.dir(evt);
+        //evt.detail.elt.setAttribute("hx-vals", JSON.stringify({ eventId: evt.detail.lastEventId }));
+    });
 </script>

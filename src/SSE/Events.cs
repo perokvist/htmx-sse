@@ -23,15 +23,19 @@ public class EventPublisher : DelegateBackgroundService
 
 public static class Events
 {
+    public record BackgroundEvent(string EventId, string Message) : Event(EventId, Message);
+    public record ScheduledEvent(string EventId, string Message) : Event(EventId, Message);
     public record Event(string EventId, string Message);
-    public static ServerSentEvent ToServerEvent(Event @event) => new() { Id = @event.EventId, Type = "TestEvent", Data = new List<string>() { @event.Message } };
+
+    public static ServerSentEvent ToServerEvent(Event @event)  
+        => new() { Id = @event.EventId, Type = @event.GetType().Name, Data = new List<string>() { @event.Message } };
 
     public static Func<CancellationToken, Task> EventCreator(ChannelWriter<Event> channelWriter)
      => async stoppingToken =>
      {
          var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
          while (await timer.WaitForNextTickAsync(stoppingToken))
-             await channelWriter.WriteAsync(new Event(Guid.NewGuid().ToString(), $"Message @ {DateTime.UtcNow}"), stoppingToken);
+             await channelWriter.WriteAsync(new BackgroundEvent(Guid.NewGuid().ToString(), $"BackgroundMessage @ {DateTime.UtcNow}"), stoppingToken);
      };
 
     public static Func<CancellationToken, Task> EventPublisher(ChannelReader<Event> channelReader,
@@ -41,8 +45,9 @@ public static class Events
          while (await channelReader.WaitToReadAsync(stoppingToken))
          {
              var e = await channelReader.ReadAsync(stoppingToken);
-             logger.LogInformation("Publishing event {0}", e.EventId);
-             await serverSentEventsService.SendEventAsync(ToServerEvent(e), stoppingToken);
+             var sse = ToServerEvent(e);
+             logger.LogInformation("Publishing event {1} {0}", sse.Id, sse.Type);
+             await serverSentEventsService.SendEventAsync(sse, stoppingToken);
          }
      };
 }
