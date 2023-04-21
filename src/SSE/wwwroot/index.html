@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Testing</title>
+    <script src="https://unpkg.com/htmx.org@1.9.0"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+
+</head>
+<body>
+    Testing!
+
+    <div hx-ext="sse" sse-connect="/sse-test">
+        <div sse-swap="TestEvent"></div>
+        <div hx-trigger="sse:TestEvent" hx-swap="afterend" hx-get="/events/" hx-vals='js:{ id: event.lastEventId }'></div>
+    </div>
+</body>
+</html>
+<script language="javascript">
+    //document.body.addEventListener('sse:TestEvent', function (evt) {
+    //    console.dir(evt);
+    //    //evt.detail.elt.setAttribute("hx-vals", JSON.stringify({ eventId: evt.detail.lastEventId }));
+    //});
+</script>
